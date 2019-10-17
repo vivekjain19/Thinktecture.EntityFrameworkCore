@@ -232,6 +232,17 @@ namespace Thinktecture.EntityFrameworkCore.Store
          }
       }
 
+      [Fact]
+      public void Should_honor_default_isolation_level_if_no_level_is_provided()
+      {
+         using (var rootTx = SUT.BeginTransaction())
+         {
+            rootTx.GetDbTransaction().IsolationLevel.Should().Be(IsolationLevel.ReadCommitted);
+
+            var childTx = SUT.BeginTransaction(IsolationLevel.ReadCommitted);
+         }
+      }
+
       private bool IsTransactionUsable(DbTransaction tx)
       {
          try
