@@ -151,7 +151,7 @@ namespace Thinktecture
       /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
       [NotNull]
       public static DbContextOptionsBuilder<T> AddSchemaRespectingComponents<T>([NotNull] this DbContextOptionsBuilder<T> builder,
-                                                                           bool addDefaultSchemaRespectingComponents = true)
+                                                                                bool addDefaultSchemaRespectingComponents = true)
          where T : DbContext
       {
          ((DbContextOptionsBuilder)builder).AddSchemaRespectingComponents(addDefaultSchemaRespectingComponents);
@@ -167,9 +167,40 @@ namespace Thinktecture
       /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
       [NotNull]
       public static DbContextOptionsBuilder AddSchemaRespectingComponents([NotNull] this DbContextOptionsBuilder builder,
-                                                                     bool addDefaultSchemaRespectingComponents = true)
+                                                                          bool addDefaultSchemaRespectingComponents = true)
       {
          builder.AddOrUpdateExtension<RelationalDbContextOptionsExtension>(extension => extension.AddSchemaRespectingComponents = addDefaultSchemaRespectingComponents);
+         return builder;
+      }
+
+      /// <summary>
+      /// Adds support for nested transactions.
+      /// </summary>
+      /// <param name="builder">Options builder.</param>
+      /// <param name="addNestedTransactionsSupport">Indication whether to enable or disable the feature.</param>
+      /// <returns>The provided <paramref name="builder"/>.</returns>
+      /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
+      [NotNull]
+      public static DbContextOptionsBuilder<T> AddNestedTransactionSupport<T>([NotNull] this DbContextOptionsBuilder<T> builder,
+                                                                              bool addNestedTransactionsSupport = true)
+         where T : DbContext
+      {
+         ((DbContextOptionsBuilder)builder).AddNestedTransactionSupport(addNestedTransactionsSupport);
+         return builder;
+      }
+
+      /// <summary>
+      /// Adds support for nested transactions.
+      /// </summary>
+      /// <param name="builder">Options builder.</param>
+      /// <param name="addNestedTransactionsSupport">Indication whether to enable or disable the feature.</param>
+      /// <returns>The provided <paramref name="builder"/>.</returns>
+      /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <c>null</c>.</exception>
+      [NotNull]
+      public static DbContextOptionsBuilder AddNestedTransactionSupport([NotNull] this DbContextOptionsBuilder builder,
+                                                                        bool addNestedTransactionsSupport = true)
+      {
+         builder.AddOrUpdateExtension<RelationalDbContextOptionsExtension>(extension => extension.AddNestedTransactionsSupport = addNestedTransactionsSupport);
          return builder;
       }
 

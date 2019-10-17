@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Thinktecture.EntityFrameworkCore.Migrations;
 using Thinktecture.EntityFrameworkCore.Query.ExpressionTranslators;
+using Thinktecture.EntityFrameworkCore.Storage;
 
 namespace Thinktecture.EntityFrameworkCore.Infrastructure
 {
@@ -31,7 +33,8 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
    'ExpressionFragmentTranslatorPluginSupport'={_activateExpressionFragmentTranslatorPluginSupport},
    'Number of custom services'={_serviceDescriptors.Count},
    'Default schema respecting components added'={AddSchemaRespectingComponents},
-   'DescendingSupport'={AddDescendingSupport}
+   'DescendingSupport'={AddDescendingSupport},
+   'NestedTransactionsSupport'={AddNestedTransactionsSupport}
 }}";
 
       /// <summary>
@@ -48,6 +51,11 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
       /// Decorates components.
       /// </summary>
       public IRelationalDbContextComponentDecorator ComponentDecorator { get; set; }
+
+      /// <summary>
+      /// Adds support for nested transactions.
+      /// </summary>
+      public bool AddNestedTransactionsSupport { get; set; }
 
       /// <summary>
       /// Initializes new instance of <see cref="RelationalDbContextOptionsExtension"/>.
@@ -69,12 +77,26 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
          if (AddSchemaRespectingComponents)
             RegisterDefaultSchemaRespectingComponents(services);
 
+         if (AddNestedTransactionsSupport)
+            RegisterNestedTransactionManager(services);
+
          foreach (var descriptor in _serviceDescriptors)
          {
             services.Add(descriptor);
          }
 
          return false;
+      }
+
+      private static void RegisterNestedTransactionManager([NotNull] IServiceCollection services)
+      {
+         var lifetime = GetLifetime<IRelationalConnection>();
+
+         services.Add(ServiceDescriptor.Describe(typeof(NestedRelationalTransactionManager),
+                                                 provider => new NestedRelationalTransactionManager(provider.GetRequiredService<IDiagnosticsLogger<RelationalDbLoggerCategory.NestedTransaction>>(), provider.GetRequiredService<IRelationalConnection>()),
+                                                 lifetime));
+         services.Add(ServiceDescriptor.Describe(typeof(IDbContextTransactionManager), provider => provider.GetRequiredService<NestedRelationalTransactionManager>(), lifetime));
+         services.Add(ServiceDescriptor.Describe(typeof(IRelationalTransactionManager), provider => provider.GetRequiredService<NestedRelationalTransactionManager>(), lifetime));
       }
 
       private static ServiceLifetime GetLifetime<TService>()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -23,6 +24,7 @@ namespace Thinktecture
       protected ILoggerFactory LoggerFactory { get; }
 
       public Action<ModelBuilder> ConfigureModel { get; set; }
+      protected Action<DbContextOptionsBuilder<TestDbContext>> ConfigureOptionsBuilder { get; set; }
 
       protected IntegrationTestsBase([NotNull] ITestOutputHelper testOutputHelper, bool useSharedTables)
          : base(TestContext.Instance.ConnectionString, useSharedTables)
@@ -61,6 +63,15 @@ namespace Thinktecture
                                                                   return new LoggerFactory()
                                                                      .AddSerilog(loggerConfig.CreateLogger());
                                                                });
+      }
+
+      /// <inheritdoc />
+      protected override DbContextOptionsBuilder<TestDbContext> CreateOptionsBuilder(DbConnection connection)
+      {
+         var builder = base.CreateOptionsBuilder(connection);
+         ConfigureOptionsBuilder?.Invoke(builder);
+
+         return builder;
       }
 
       /// <inheritdoc />
