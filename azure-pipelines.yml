@@ -1,6 +1,7 @@
 trigger:
 - master
 - develop
+- releases/*
 - refs/tags/*
 
 variables:
