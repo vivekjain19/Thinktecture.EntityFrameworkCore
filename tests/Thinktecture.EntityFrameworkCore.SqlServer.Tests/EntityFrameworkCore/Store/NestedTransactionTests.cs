@@ -1,5 +1,6 @@
 using System;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Transactions;
 using FluentAssertions;
@@ -15,6 +16,7 @@ using IsolationLevel = System.Data.IsolationLevel;
 
 namespace Thinktecture.EntityFrameworkCore.Store
 {
+   [SuppressMessage("ReSharper", "UnusedVariable")]
    public class NestedTransactionTests : IntegrationTestsBase
    {
       protected NestedRelationalTransactionManager SUT => ActDbContext.GetService<NestedRelationalTransactionManager>();

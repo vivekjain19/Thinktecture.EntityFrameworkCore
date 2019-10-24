@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -6,6 +7,7 @@ using Xunit.Abstractions;
 
 namespace Thinktecture.EntityFrameworkCore.Storage.NestedRelationalTransactionManagerTests
 {
+   [SuppressMessage("ReSharper", "UnusedVariable")]
    public class ResetState : NestedRelationalTransactionManagerTestBase
    {
       public ResetState([NotNull] ITestOutputHelper testOutputHelper)

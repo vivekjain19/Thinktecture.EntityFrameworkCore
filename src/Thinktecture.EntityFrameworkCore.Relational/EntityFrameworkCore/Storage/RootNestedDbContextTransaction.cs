@@ -3,7 +3,6 @@ using System.Data.Common;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace Thinktecture.EntityFrameworkCore.Storage
 {

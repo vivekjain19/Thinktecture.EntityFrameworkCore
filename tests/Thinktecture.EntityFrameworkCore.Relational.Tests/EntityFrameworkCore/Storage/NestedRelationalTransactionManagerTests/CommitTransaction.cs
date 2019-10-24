@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -7,6 +8,7 @@ using Xunit.Abstractions;
 
 namespace Thinktecture.EntityFrameworkCore.Storage.NestedRelationalTransactionManagerTests
 {
+   [SuppressMessage("ReSharper", "UnusedVariable")]
    public class CommitTransaction : NestedRelationalTransactionManagerTestBase
    {
       public CommitTransaction([NotNull] ITestOutputHelper testOutputHelper)

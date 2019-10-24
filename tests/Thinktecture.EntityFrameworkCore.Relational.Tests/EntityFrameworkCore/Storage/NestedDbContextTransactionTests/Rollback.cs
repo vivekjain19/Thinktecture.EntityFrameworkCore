@@ -1,5 +1,5 @@
 using System;
-using System.Transactions;
+using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace Thinktecture.EntityFrameworkCore.Storage.NestedDbContextTransactionTests
 {
+   [SuppressMessage("ReSharper", "UnusedVariable")]
    public class Rollback : NestedRelationalTransactionManagerTestBase
    {
       public Rollback([NotNull] ITestOutputHelper testOutputHelper)
