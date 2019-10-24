@@ -31,7 +31,26 @@ namespace Thinktecture
       /// <param name="cancellationToken">Cancellation token.</param>
       /// <returns>The result of <c>MIN_ACTIVE_ROWVERSION</c> call.</returns>
       /// <exception cref="ArgumentNullException"><paramref name="ctx"/> is <c>null</c>.</exception>
-      public static async Task<long> GetMinActiveRowVersionAsync([NotNull] this DbContext ctx, CancellationToken cancellationToken)
+      [NotNull]
+      public static Task<long> GetMinActiveRowVersionAsync([NotNull] this DbContext ctx, CancellationToken cancellationToken = default)
+      {
+         return GetRowVersionAsync(ctx, "MIN_ACTIVE_ROWVERSION()", cancellationToken);
+      }
+
+      /// <summary>
+      /// Fetches <c>@@DBTS</c> from SQL Server.
+      /// </summary>
+      /// <param name="ctx">Database context to use.</param>
+      /// <param name="cancellationToken">Cancellation token.</param>
+      /// <returns>The result of <c>@@DBTS</c> call.</returns>
+      /// <exception cref="ArgumentNullException"><paramref name="ctx"/> is <c>null</c>.</exception>
+      [NotNull]
+      public static Task<long> GetLastUsedRowVersionAsync([NotNull] this DbContext ctx, CancellationToken cancellationToken = default)
+      {
+         return GetRowVersionAsync(ctx, "@@DBTS", cancellationToken);
+      }
+
+      private static async Task<long> GetRowVersionAsync([NotNull] DbContext ctx, [NotNull] string dbFunction, CancellationToken cancellationToken)
       {
          if (ctx == null)
             throw new ArgumentNullException(nameof(ctx));
@@ -39,7 +58,7 @@ namespace Thinktecture
          using (var command = ctx.Database.GetDbConnection().CreateCommand())
          {
             command.Transaction = ctx.Database.CurrentTransaction?.GetDbTransaction();
-            command.CommandText = "SELECT MIN_ACTIVE_ROWVERSION();";
+            command.CommandText = $"SELECT {dbFunction};";
 
             await ctx.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -108,12 +127,12 @@ namespace Thinktecture
       /// <exception cref="ArgumentNullException"> <paramref name="ctx"/> or <paramref name="entities"/> is <c>null</c>.</exception>
       [NotNull]
       public static Task BulkInsertAsync<T>([NotNull] this DbContext ctx,
-                                                  [NotNull] IEnumerable<T> entities,
-                                                  [CanBeNull] SqlServerBulkInsertOptions options,
-                                                  CancellationToken cancellationToken = default)
+                                            [NotNull] IEnumerable<T> entities,
+                                            [CanBeNull] SqlServerBulkInsertOptions options,
+                                            CancellationToken cancellationToken = default)
          where T : class
       {
-         return ctx.BulkInsertAsync(entities,(IBulkInsertOptions) options, cancellationToken);
+         return ctx.BulkInsertAsync(entities, (IBulkInsertOptions)options, cancellationToken);
       }
 
       /// <summary>
