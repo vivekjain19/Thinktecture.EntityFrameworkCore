@@ -48,7 +48,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
                return;
 
             // ReSharper disable once RedundantCast because the "name" should not be sent as a parameter.
-            _database.ExecuteSqlCommand((string)$"DROP TABLE {_sqlGenerationHelper.DelimitIdentifier(Name)}");
+            _database.ExecuteSqlCommand((string)$"DROP TABLE IF EXISTS {_sqlGenerationHelper.DelimitIdentifier(Name)}");
             _database.CloseConnection();
          }
          catch (ObjectDisposedException ex)
