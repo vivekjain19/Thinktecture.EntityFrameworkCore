@@ -9,7 +9,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
    public class TempTableCreationOptions
    {
       /// <summary>
-      /// Drops/truncates the temp table if the table exists already.
+      /// Drops/truncates the temp table before "creation" if the table exists already.
       /// Default is <c>false</c>.
       /// </summary>
       public bool DropTempTableIfExists { get; set; }

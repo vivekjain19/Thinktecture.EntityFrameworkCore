@@ -17,6 +17,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
       private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _logger;
       private readonly ISqlGenerationHelper _sqlGenerationHelper;
       private readonly DatabaseFacade _database;
+      private readonly ITempTableNameLease _nameLease;
 
       /// <inheritdoc />
       public string Name { get; }
@@ -28,15 +29,18 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
       /// <param name="sqlGenerationHelper">SQL generation helper.</param>
       /// <param name="tableName">The name of the temp table.</param>
       /// <param name="database">Database facade.</param>
+      /// <param name="nameLease">Leased table name that will be disposed along with the temp table.</param>
       public SqlServerTempTableReference([NotNull] IDiagnosticsLogger<DbLoggerCategory.Query> logger,
                                          [NotNull] ISqlGenerationHelper sqlGenerationHelper,
                                          [NotNull] string tableName,
-                                         [NotNull] DatabaseFacade database)
+                                         [NotNull] DatabaseFacade database,
+                                         [NotNull] ITempTableNameLease nameLease)
       {
          Name = tableName ?? throw new ArgumentNullException(nameof(tableName));
          _logger = logger ?? throw new ArgumentNullException(nameof(logger));
          _sqlGenerationHelper = sqlGenerationHelper ?? throw new ArgumentNullException(nameof(sqlGenerationHelper));
          _database = database ?? throw new ArgumentNullException(nameof(database));
+         _nameLease = nameLease ?? throw new ArgumentNullException(nameof(nameLease));
       }
 
       /// <inheritdoc />
@@ -54,6 +58,10 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
          catch (ObjectDisposedException ex)
          {
             _logger.Logger.LogWarning(ex, $"Trying to dispose of the temp table reference '{Name}' after the corresponding DbContext has been disposed.");
+         }
+         finally
+         {
+            _nameLease.Dispose();
          }
       }
    }
