@@ -9,10 +9,14 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
    public class TempTableCreationOptions
    {
       /// <summary>
-      /// Drops/truncates the temp table before "creation" if the table exists already.
+      /// Truncates/drops the temp table before "creation" if the table exists already.
       /// Default is <c>false</c>.
       /// </summary>
-      public bool DropTempTableIfExists { get; set; }
+      /// <remarks>
+      /// If the database supports "truncate" then the table is going to be truncated otherwise the table is dropped.
+      /// If the property is set to <c>false</c> then the temp table is considered a "new table", i.e. no "EXISTS" checks are made.
+      /// </remarks>
+      public bool TruncateTableIfExists { get; set; }
 
       /// <summary>
       /// Indication whether the table name should be unique.
@@ -36,5 +40,15 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
          get => _tableNameProvider ?? NewGuidTempTableNameProvider.Instance;
          set => _tableNameProvider = value ?? throw new ArgumentNullException(nameof(value), "The table name provider cannot be null.");
       }
+
+      /// <summary>
+      /// Indication whether to drop the temp table on dispose of <see cref="ITempTableQuery{T}"/>.
+      /// Default is <c>true</c>.
+      /// </summary>
+      /// <remarks>
+      /// Set to <c>false</c> for more performance if the same temp table is re-used very often.
+      /// Set <see cref="TruncateTableIfExists"/> to <c>true</c> on re-use.
+      /// </remarks>
+      public bool DropTableOnDispose { get; set; } = true;
    }
 }

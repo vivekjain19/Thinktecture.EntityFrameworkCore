@@ -48,6 +48,39 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       }
 
       [Fact]
+      public async Task Should_delete_temp_table_on_dispose_if_DropTableOnDispose_is_true()
+      {
+         ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
+
+         _optionsWithNonUniqueName.DropTableOnDispose = true;
+
+         using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), _optionsWithNonUniqueName).ConfigureAwait(false))
+         {
+         }
+
+         AssertDbContext.GetCustomTempTableColumns<CustomTempTable>().ToList()
+                        .Should().HaveCount(0);
+      }
+
+      [Fact]
+      public async Task Should_not_delete_temp_table_on_dispose_if_DropTableOnDispose_is_false()
+      {
+         ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
+
+         _optionsWithNonUniqueName.DropTableOnDispose = false;
+
+         using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), _optionsWithNonUniqueName).ConfigureAwait(false))
+         {
+         }
+
+         var columns = AssertDbContext.GetCustomTempTableColumns<CustomTempTable>().ToList();
+         columns.Should().HaveCount(2);
+
+         ValidateColumn(columns[0], nameof(CustomTempTable.Column1), "int", false);
+         ValidateColumn(columns[1], nameof(CustomTempTable.Column2), "nvarchar", true);
+      }
+
+      [Fact]
       public async Task Should_create_temp_table_with_reusable_name()
       {
          ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
@@ -72,8 +105,9 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
          var options = new TempTableCreationOptions { TableNameProvider = ReusableTempTableNameProvider.Instance };
 
          // ReSharper disable once RedundantArgumentDefaultValue
-         var tempTable1 = await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false);
-         tempTable1.Dispose();
+         using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false))
+         {
+         }
 
          await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false);
 
@@ -82,6 +116,35 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
 
          ValidateColumn(columns[0], nameof(CustomTempTable.Column1), "int", false);
          ValidateColumn(columns[1], nameof(CustomTempTable.Column2), "nvarchar", true);
+      }
+
+      [Fact]
+      public async Task Should_reuse_name_after_it_is_freed_although_previously_not_dropped()
+      {
+         ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
+
+         var options = new TempTableCreationOptions
+                       {
+                          TableNameProvider = ReusableTempTableNameProvider.Instance,
+                          DropTableOnDispose = false
+                       };
+
+         // ReSharper disable once RedundantArgumentDefaultValue
+         using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false))
+         {
+         }
+
+         options.TruncateTableIfExists = true;
+         await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false);
+
+         var columns = AssertDbContext.GetTempTableColumns("#CustomTempTable_1").ToList();
+         columns.Should().HaveCount(2);
+
+         ValidateColumn(columns[0], nameof(CustomTempTable.Column1), "int", false);
+         ValidateColumn(columns[1], nameof(CustomTempTable.Column2), "nvarchar", true);
+
+         AssertDbContext.GetTempTableColumns("#CustomTempTable_2").ToList()
+                        .Should().HaveCount(0);
       }
 
       [Fact]

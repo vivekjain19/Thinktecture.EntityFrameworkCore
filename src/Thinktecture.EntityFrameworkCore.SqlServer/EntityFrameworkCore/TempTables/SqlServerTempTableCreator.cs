@@ -49,7 +49,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
 
          var (nameLease, tableName) = GetTableName(ctx, entityType, options.TableNameProvider);
          var properties = entityType.GetProperties();
-         var sql = GetTempTableCreationSql(properties, tableName, options.DropTempTableIfExists);
+         var sql = GetTempTableCreationSql(properties, tableName, options.TruncateTableIfExists);
 
          await ctx.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -67,7 +67,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
 
          var logger = ctx.GetService<IDiagnosticsLogger<DbLoggerCategory.Query>>();
 
-         return new SqlServerTempTableReference(logger, _sqlGenerationHelper, tableName, ctx.Database, nameLease);
+         return new SqlServerTempTableReference(logger, _sqlGenerationHelper, tableName, ctx.Database, nameLease, options.DropTableOnDispose);
       }
 
       private static (ITempTableNameLease nameLease, string tableName) GetTableName(

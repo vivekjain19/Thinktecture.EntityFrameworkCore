@@ -237,12 +237,12 @@ namespace Thinktecture
          try
          {
             if (options.PrimaryKeyCreation == PrimaryKeyCreation.BeforeBulkInsert)
-               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, options.TempTableCreationOptions.DropTempTableIfExists, cancellationToken).ConfigureAwait(false);
+               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, options.TempTableCreationOptions.TruncateTableIfExists, cancellationToken).ConfigureAwait(false);
 
             await bulkInsertExecutor.BulkInsertAsync(ctx, entityType, entities, null, tempTableReference.Name, options.ServerBulkInsertOptions, cancellationToken).ConfigureAwait(false);
 
             if (options.PrimaryKeyCreation == PrimaryKeyCreation.AfterBulkInsert)
-               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, options.TempTableCreationOptions.DropTempTableIfExists, cancellationToken).ConfigureAwait(false);
+               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, options.TempTableCreationOptions.TruncateTableIfExists, cancellationToken).ConfigureAwait(false);
 
             var query = ctx.GetTempTableQuery<T>(entityType, tempTableReference.Name);
 
