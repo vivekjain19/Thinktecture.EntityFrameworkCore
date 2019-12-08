@@ -11,6 +11,7 @@ using Thinktecture.EntityFrameworkCore.Data;
 using Thinktecture.EntityFrameworkCore.Migrations;
 using Thinktecture.EntityFrameworkCore.Query.ExpressionTranslators;
 using Thinktecture.EntityFrameworkCore.TempTables;
+using Thinktecture.EntityFrameworkCore.TempTables.NameSuffixing;
 
 namespace Thinktecture.EntityFrameworkCore.Infrastructure
 {
@@ -62,7 +63,10 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
          services.Add<IMethodCallTranslatorPlugin, SqlServerMethodCallTranslatorPlugin>(GetLifetime<IMethodCallTranslatorPlugin>());
 
          if (AddTempTableSupport)
+         {
             services.TryAdd<ITempTableCreator, SqlServerTempTableCreator>(GetLifetime<ISqlGenerationHelper>());
+            services.AddScoped<TempTableSuffixLeasing>();
+         }
 
          if (AddBulkOperationSupport)
          {
