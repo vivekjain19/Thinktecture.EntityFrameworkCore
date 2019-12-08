@@ -37,13 +37,13 @@ namespace Thinktecture.Extensions.DbContextExtensionsTests
       }
 
       [Fact]
-      public async Task Should_throw_if_inserting_duplicates()
+      public void Should_throw_if_inserting_duplicates()
       {
          ConfigureModel = builder => builder.ConfigureTempTable<int>();
 
          var values = new List<int> { 1, 1 };
          ActDbContext.Awaiting(ctx => ctx.BulkInsertValuesIntoTempTableAsync(values))
-                     .Should().Throw<SqlException>().Where(ex => ex.Message.StartsWith("The CREATE UNIQUE INDEX statement terminated because a duplicate key was found"));
+                     .Should().Throw<SqlException>().Where(ex => ex.Message.StartsWith("The CREATE UNIQUE INDEX statement terminated because a duplicate key was found", StringComparison.Ordinal));
       }
 
       [Fact]
@@ -94,7 +94,7 @@ namespace Thinktecture.Extensions.DbContextExtensionsTests
       {
          ConfigureModel = builder => builder.ConfigureTempTable<string>().Property(t => t.Column1).HasMaxLength(100).IsRequired();
 
-         await ActDbContext.BulkInsertValuesIntoTempTableAsync(new List<string> { "value" }, new SqlTempTableBulkInsertOptions { TempTableCreationOptions = { MakeTableNameUnique = false } }).ConfigureAwait(false);
+         await ActDbContext.BulkInsertValuesIntoTempTableAsync(new List<string> { "value" }, new SqlTempTableBulkInsertOptions { TempTableCreationOptions = { TableNameProvider = DefaultTempTableNameProvider.Instance } }).ConfigureAwait(false);
 
          var keys = AssertDbContext.GetTempTableKeyColumns<TempTable<string>>().ToList();
          keys.Should().HaveCount(1);
@@ -115,7 +115,7 @@ namespace Thinktecture.Extensions.DbContextExtensionsTests
       {
          ConfigureModel = builder => builder.ConfigureTempTable<int>();
 
-         await ActDbContext.BulkInsertValuesIntoTempTableAsync(new List<int> { 1 }, new SqlTempTableBulkInsertOptions { TempTableCreationOptions = { MakeTableNameUnique = false } }).ConfigureAwait(false);
+         await ActDbContext.BulkInsertValuesIntoTempTableAsync(new List<int> { 1 }, new SqlTempTableBulkInsertOptions { TempTableCreationOptions = { TableNameProvider = DefaultTempTableNameProvider.Instance } }).ConfigureAwait(false);
 
          var keys = ArrangeDbContext.GetTempTableKeyColumns<TempTable<int>>().ToList();
          keys.Should().HaveCount(1);

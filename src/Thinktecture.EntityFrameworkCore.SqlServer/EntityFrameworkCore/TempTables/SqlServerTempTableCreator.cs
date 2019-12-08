@@ -47,9 +47,9 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
          if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-         var tableName = GetTableName(entityType, options.MakeTableNameUnique);
+         var tableName = GetTableName(ctx, entityType, options.TableNameProvider);
          var properties = entityType.GetProperties();
-         var sql = GetTempTableCreationSql(properties, tableName, options.MakeTableNameUnique);
+         var sql = GetTempTableCreationSql(properties, tableName, options.DropTempTableIfExists);
 
          await ctx.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -71,15 +71,15 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
       }
 
       [NotNull]
-      private static string GetTableName([NotNull] IEntityType entityType, bool makeTableNameUnique)
+      private static string GetTableName([NotNull] DbContext ctx, [NotNull] IEntityType entityType, [NotNull] ITempTableNameProvider nameProvider)
       {
-         var tableName = entityType.Relational().TableName;
+         if (nameProvider == null)
+            throw new ArgumentNullException(nameof(nameProvider));
+
+         var tableName = nameProvider.GetName(ctx, entityType);
 
          if (!tableName.StartsWith("#", StringComparison.Ordinal))
             tableName = $"#{tableName}";
-
-         if (makeTableNameUnique)
-            tableName = $"{tableName}_{Guid.NewGuid():N}";
 
          return tableName;
       }
@@ -130,7 +130,7 @@ END
       }
 
       [NotNull]
-      private string GetTempTableCreationSql([NotNull] IEnumerable<IProperty> properties, [NotNull] string tableName, bool isUnique)
+      private string GetTempTableCreationSql([NotNull] IEnumerable<IProperty> properties, [NotNull] string tableName, bool dropTempTableIfExists)
       {
          if (properties == null)
             throw new ArgumentNullException(nameof(properties));
@@ -143,7 +143,7 @@ END
 {GetColumnsDefinitions(properties)}
       );";
 
-         if (isUnique)
+         if (!dropTempTableIfExists)
             return sql;
 
          return $@"
