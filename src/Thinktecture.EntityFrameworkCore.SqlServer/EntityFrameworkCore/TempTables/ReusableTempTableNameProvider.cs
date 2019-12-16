@@ -28,8 +28,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
             throw new ArgumentNullException(nameof(entityType));
 
          var nameLeasing = ctx.GetService<TempTableSuffixLeasing>();
-         var conn = ctx.Database.GetDbConnection();
-         var suffixLease = nameLeasing.Lease(conn, entityType);
+         var suffixLease = nameLeasing.Lease(entityType);
 
          try
          {

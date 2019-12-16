@@ -66,6 +66,7 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
          {
             services.TryAdd<ITempTableCreator, SqlServerTempTableCreator>(GetLifetime<ISqlGenerationHelper>());
             services.AddScoped<TempTableSuffixLeasing>();
+            services.AddSingleton<TempTableSuffixCache>();
          }
 
          if (AddBulkOperationSupport)
