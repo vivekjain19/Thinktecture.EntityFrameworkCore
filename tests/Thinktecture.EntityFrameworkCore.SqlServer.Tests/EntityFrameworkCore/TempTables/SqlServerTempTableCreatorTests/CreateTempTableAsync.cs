@@ -85,7 +85,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       {
          ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
 
-         var options = new TempTableCreationOptions { TableNameProvider = ReusableTempTableNameProvider.Instance };
+         var options = new TempTableCreationOptions { TableNameProvider = ReusingTempTableNameProvider.Instance };
 
          // ReSharper disable once RedundantArgumentDefaultValue
          await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false);
@@ -102,7 +102,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       {
          ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
 
-         var options = new TempTableCreationOptions { TableNameProvider = ReusableTempTableNameProvider.Instance };
+         var options = new TempTableCreationOptions { TableNameProvider = ReusingTempTableNameProvider.Instance };
 
          // ReSharper disable once RedundantArgumentDefaultValue
          using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false))
@@ -125,7 +125,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
 
          var options = new TempTableCreationOptions
                        {
-                          TableNameProvider = ReusableTempTableNameProvider.Instance,
+                          TableNameProvider = ReusingTempTableNameProvider.Instance,
                           DropTableOnDispose = false
                        };
 
@@ -152,7 +152,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       {
          ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
 
-         var options = new TempTableCreationOptions { TableNameProvider = ReusableTempTableNameProvider.Instance };
+         var options = new TempTableCreationOptions { TableNameProvider = ReusingTempTableNameProvider.Instance };
 
          // ReSharper disable once RedundantArgumentDefaultValue
          using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false))
@@ -172,7 +172,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       {
          ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
 
-         var options = new TempTableCreationOptions { TableNameProvider = ReusableTempTableNameProvider.Instance };
+         var options = new TempTableCreationOptions { TableNameProvider = ReusingTempTableNameProvider.Instance };
 
          // #CustomTempTable_1
          using (await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), options).ConfigureAwait(false))

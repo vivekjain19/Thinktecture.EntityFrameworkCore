@@ -12,12 +12,12 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
    /// <summary>
    /// Re-uses the temp table names.
    /// </summary>
-   public class ReusableTempTableNameProvider : ITempTableNameProvider
+   public class ReusingTempTableNameProvider : ITempTableNameProvider
    {
       /// <summary>
-      /// An instance of <see cref="ReusableTempTableNameProvider"/>.
+      /// An instance of <see cref="ReusingTempTableNameProvider"/>.
       /// </summary>
-      public static readonly ITempTableNameProvider Instance = new ReusableTempTableNameProvider();
+      public static readonly ITempTableNameProvider Instance = new ReusingTempTableNameProvider();
 
       /// <inheritdoc />
       public ITempTableNameLease LeaseName(DbContext ctx, IEntityType entityType)
