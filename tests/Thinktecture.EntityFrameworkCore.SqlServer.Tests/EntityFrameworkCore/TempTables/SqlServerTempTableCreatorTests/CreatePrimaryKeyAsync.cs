@@ -36,7 +36,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       {
          ConfigureModel = builder => builder.ConfigureTempTable<int>();
 
-         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TempTable<int>>(false);
+         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TempTable<int>>(DefaultTempTableNameProvider.Instance);
 
          await _sut.CreatePrimaryKeyAsync(ActDbContext, ActDbContext.GetEntityType<TempTable<int>>(), tempTableReference.Name);
 
@@ -52,7 +52,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       [Fact]
       public async Task Should_create_primary_key_for_entityType()
       {
-         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TestEntity>(false);
+         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TestEntity>(DefaultTempTableNameProvider.Instance);
 
          await _sut.CreatePrimaryKeyAsync(ActDbContext, ActDbContext.GetEntityType<TestEntity>(), tempTableReference.Name);
 
@@ -68,7 +68,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       [Fact]
       public async Task Should_not_create_primary_key_if_key_exists_and_checkForExistence_is_true()
       {
-         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TestEntity>();
+         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TestEntity>(NewGuidTempTableNameProvider.Instance);
          var entityType = ArrangeDbContext.GetEntityType<TestEntity>();
          await _sut.CreatePrimaryKeyAsync(ArrangeDbContext, entityType, tempTableReference.Name);
 
@@ -79,7 +79,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       [Fact]
       public async Task Should_throw_if_key_exists_and_checkForExistence_is_false()
       {
-         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TestEntity>();
+         var tempTableReference = await ArrangeDbContext.CreateTempTableAsync<TestEntity>(NewGuidTempTableNameProvider.Instance);
          var entityType = ArrangeDbContext.GetEntityType<TestEntity>();
          await _sut.CreatePrimaryKeyAsync(ArrangeDbContext, entityType, tempTableReference.Name);
 

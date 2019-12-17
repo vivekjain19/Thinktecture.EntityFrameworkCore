@@ -47,9 +47,9 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
          if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-         var tableName = GetTableName(entityType, options.MakeTableNameUnique);
+         var (nameLease, tableName) = GetTableName(ctx, entityType, options.TableNameProvider);
          var properties = entityType.GetProperties();
-         var sql = GetTempTableCreationSql(properties, tableName, options.MakeTableNameUnique);
+         var sql = GetTempTableCreationSql(properties, tableName, options.TruncateTableIfExists);
 
          await ctx.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -67,21 +67,24 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
 
          var logger = ctx.GetService<IDiagnosticsLogger<DbLoggerCategory.Query>>();
 
-         return new SqlServerTempTableReference(logger, _sqlGenerationHelper, tableName, ctx.Database);
+         return new SqlServerTempTableReference(logger, _sqlGenerationHelper, tableName, ctx.Database, nameLease, options.DropTableOnDispose);
       }
 
-      [NotNull]
-      private static string GetTableName([NotNull] IEntityType entityType, bool makeTableNameUnique)
+      private static (ITempTableNameLease nameLease, string tableName) GetTableName(
+         [NotNull] DbContext ctx,
+         [NotNull] IEntityType entityType,
+         [NotNull] ITempTableNameProvider nameProvider)
       {
-         var tableName = entityType.Relational().TableName;
+         if (nameProvider == null)
+            throw new ArgumentNullException(nameof(nameProvider));
 
-         if (!tableName.StartsWith("#", StringComparison.Ordinal))
-            tableName = $"#{tableName}";
+         var nameLease = nameProvider.LeaseName(ctx, entityType);
+         var name = nameLease.Name;
 
-         if (makeTableNameUnique)
-            tableName = $"{tableName}_{Guid.NewGuid():N}";
+         if (!name.StartsWith("#", StringComparison.Ordinal))
+            name = $"#{name}";
 
-         return tableName;
+         return (nameLease, name);
       }
 
       /// <inheritdoc />
@@ -130,7 +133,7 @@ END
       }
 
       [NotNull]
-      private string GetTempTableCreationSql([NotNull] IEnumerable<IProperty> properties, [NotNull] string tableName, bool isUnique)
+      private string GetTempTableCreationSql([NotNull] IEnumerable<IProperty> properties, [NotNull] string tableName, bool dropTempTableIfExists)
       {
          if (properties == null)
             throw new ArgumentNullException(nameof(properties));
@@ -143,7 +146,7 @@ END
 {GetColumnsDefinitions(properties)}
       );";
 
-         if (isUnique)
+         if (!dropTempTableIfExists)
             return sql;
 
          return $@"

@@ -86,10 +86,28 @@ namespace Thinktecture
       /// <exception cref="ArgumentNullException"><paramref name="ctx"/> is <c>null</c>.</exception>
       /// <exception cref="ArgumentException">The provided type <typeparamref name="T"/> is not known by provided <paramref name="ctx"/>.</exception>
       [NotNull, ItemNotNull]
+      [Obsolete("This overload will be removed in future version. Use the overload with 'ITempTableNameProvider' instead.")]
       public static Task<ITempTableReference> CreateTempTableAsync<T>([NotNull] this DbContext ctx, bool makeTableNameUnique = true, CancellationToken cancellationToken = default)
          where T : class
       {
          return ctx.CreateTempTableAsync(typeof(T), new TempTableCreationOptions { MakeTableNameUnique = makeTableNameUnique }, cancellationToken);
+      }
+
+      /// <summary>
+      /// Creates a temp table using custom type '<typeparamref name="T"/>'.
+      /// </summary>
+      /// <param name="ctx">Database context to use.</param>
+      /// <param name="tableNameProvider">Providers the name for the temp table to create.</param>
+      /// <param name="cancellationToken">Cancellation token.</param>
+      /// <typeparam name="T">Type of custom temp table.</typeparam>
+      /// <returns>Table name</returns>
+      /// <exception cref="ArgumentNullException"><paramref name="ctx"/> is <c>null</c>.</exception>
+      /// <exception cref="ArgumentException">The provided type <typeparamref name="T"/> is not known by provided <paramref name="ctx"/>.</exception>
+      [NotNull, ItemNotNull]
+      public static Task<ITempTableReference> CreateTempTableAsync<T>([NotNull] this DbContext ctx, [NotNull] ITempTableNameProvider tableNameProvider, CancellationToken cancellationToken = default)
+         where T : class
+      {
+         return ctx.CreateTempTableAsync(typeof(T), new TempTableCreationOptions { TableNameProvider = tableNameProvider }, cancellationToken);
       }
 
       /// <summary>
@@ -219,12 +237,12 @@ namespace Thinktecture
          try
          {
             if (options.PrimaryKeyCreation == PrimaryKeyCreation.BeforeBulkInsert)
-               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, !options.TempTableCreationOptions.MakeTableNameUnique, cancellationToken).ConfigureAwait(false);
+               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, options.TempTableCreationOptions.TruncateTableIfExists, cancellationToken).ConfigureAwait(false);
 
             await bulkInsertExecutor.BulkInsertAsync(ctx, entityType, entities, null, tempTableReference.Name, options.ServerBulkInsertOptions, cancellationToken).ConfigureAwait(false);
 
             if (options.PrimaryKeyCreation == PrimaryKeyCreation.AfterBulkInsert)
-               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, !options.TempTableCreationOptions.MakeTableNameUnique, cancellationToken).ConfigureAwait(false);
+               await tempTableCreator.CreatePrimaryKeyAsync(ctx, entityType, tempTableReference.Name, options.TempTableCreationOptions.TruncateTableIfExists, cancellationToken).ConfigureAwait(false);
 
             var query = ctx.GetTempTableQuery<T>(entityType, tempTableReference.Name);
 
