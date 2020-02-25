@@ -22,6 +22,8 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
       private readonly ISqlGenerationHelper _sqlGenerationHelper;
       private readonly IRelationalTypeMappingSource _typeMappingSource;
 
+      private static readonly string[] _stringColumnTypes = { "char", "varchar", "text", "nchar", "nvarchar", "ntext" };
+
       /// <summary>
       /// Initializes <see cref="SqlServerTempTableCreator"/>.
       /// </summary>
@@ -49,7 +51,7 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
 
          var (nameLease, tableName) = GetTableName(ctx, entityType, options.TableNameProvider);
          var properties = entityType.GetProperties();
-         var sql = GetTempTableCreationSql(properties, tableName, options.TruncateTableIfExists);
+         var sql = GetTempTableCreationSql(properties, tableName, options.TruncateTableIfExists, options.UseDefaultDatabaseCollation);
 
          await ctx.Database.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -133,7 +135,11 @@ END
       }
 
       [NotNull]
-      private string GetTempTableCreationSql([NotNull] IEnumerable<IProperty> properties, [NotNull] string tableName, bool dropTempTableIfExists)
+      private string GetTempTableCreationSql(
+         [NotNull] IEnumerable<IProperty> properties,
+         [NotNull] string tableName,
+         bool dropTempTableIfExists,
+         bool useDefaultDatabaseCollation)
       {
          if (properties == null)
             throw new ArgumentNullException(nameof(properties));
@@ -143,7 +149,7 @@ END
          var sql = $@"
       CREATE TABLE {_sqlGenerationHelper.DelimitIdentifier(tableName)}
       (
-{GetColumnsDefinitions(properties)}
+{GetColumnsDefinitions(properties, useDefaultDatabaseCollation)}
       );";
 
          if (!dropTempTableIfExists)
@@ -160,7 +166,9 @@ END
       }
 
       [NotNull]
-      private string GetColumnsDefinitions([NotNull] IEnumerable<IProperty> properties)
+      private string GetColumnsDefinitions(
+         [NotNull] IEnumerable<IProperty> properties,
+         bool useDefaultDatabaseCollation)
       {
          if (properties == null)
             throw new ArgumentNullException(nameof(properties));
@@ -176,9 +184,14 @@ END
             var relational = property.Relational();
 
             sb.Append("\t\t")
-              .Append(_sqlGenerationHelper.DelimitIdentifier(relational.ColumnName)).Append(" ")
-              .Append(relational.ColumnType)
-              .Append(property.IsNullable ? " NULL" : " NOT NULL");
+              .Append(_sqlGenerationHelper.DelimitIdentifier(relational.ColumnName))
+              .Append(" ")
+              .Append(relational.ColumnType);
+
+            if (useDefaultDatabaseCollation && _stringColumnTypes.Any(t => relational.ColumnType.StartsWith(t, StringComparison.OrdinalIgnoreCase)))
+               sb.Append(" COLLATE database_default");
+
+            sb.Append(property.IsNullable ? " NULL" : " NOT NULL");
 
             if (IsIdentityColumn(property))
                sb.Append(" IDENTITY");

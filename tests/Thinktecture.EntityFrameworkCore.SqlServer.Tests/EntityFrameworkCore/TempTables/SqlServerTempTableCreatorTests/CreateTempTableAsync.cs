@@ -33,6 +33,22 @@ namespace Thinktecture.EntityFrameworkCore.TempTables.SqlServerTempTableCreatorT
       }
 
       [Fact]
+      public async Task Should_create_temp_table_with_default_database_collation()
+      {
+         ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();
+         _optionsWithNonUniqueName.UseDefaultDatabaseCollation = true;
+
+         // ReSharper disable once RedundantArgumentDefaultValue
+         await _sut.CreateTempTableAsync(ActDbContext, ActDbContext.GetEntityType<CustomTempTable>(), _optionsWithNonUniqueName).ConfigureAwait(false);
+
+         var columns = AssertDbContext.GetCustomTempTableColumns<CustomTempTable>().ToList();
+         columns.Should().HaveCount(2);
+
+         ValidateColumn(columns[0], nameof(CustomTempTable.Column1), "int", false);
+         ValidateColumn(columns[1], nameof(CustomTempTable.Column2), "nvarchar", true);
+      }
+
+      [Fact]
       public async Task Should_create_temp_table_for_queryType()
       {
          ConfigureModel = builder => builder.ConfigureTempTableEntity<CustomTempTable>();

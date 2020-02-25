@@ -50,5 +50,10 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
       /// Set <see cref="TruncateTableIfExists"/> to <c>true</c> on re-use.
       /// </remarks>
       public bool DropTableOnDispose { get; set; } = true;
+
+      /// <summary>
+      /// Adds "COLLATE database_default" to columns so the collation matches with the one of the user database instead of the master db.
+      /// </summary>
+      public bool UseDefaultDatabaseCollation { get; set; } = false;
    }
 }
