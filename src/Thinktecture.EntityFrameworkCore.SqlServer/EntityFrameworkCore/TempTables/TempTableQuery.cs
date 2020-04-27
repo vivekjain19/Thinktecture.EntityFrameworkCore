@@ -18,6 +18,11 @@ namespace Thinktecture.EntityFrameworkCore.TempTables
       /// </summary>
       public IQueryable<T> Query { get; }
 
+      /// <summary>
+      /// The name of the temp table.
+      /// </summary>
+      public string Name => _tempTableReference?.Name ?? throw new ObjectDisposedException(nameof(TempTableQuery<T>));
+
       private ITempTableReference _tempTableReference;
 
       /// <summary>
