@@ -69,7 +69,6 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
       public bool ApplyServices(IServiceCollection services)
       {
          services.TryAddSingleton(this);
-         services.Add<IMethodCallTranslatorPlugin, RelationalMethodCallTranslatorPlugin>(GetLifetime<IMethodCallTranslatorPlugin>());
 
          if (_activateExpressionFragmentTranslatorPluginSupport)
             RegisterCompositeExpressionFragmentTranslator(services);
@@ -147,22 +146,6 @@ namespace Thinktecture.EntityFrameworkCore.Infrastructure
 
          Add(ServiceDescriptor.Singleton(typeof(IExpressionFragmentTranslatorPlugin), type));
          _activateExpressionFragmentTranslatorPluginSupport = true;
-      }
-
-      /// <summary>
-      /// Adds provided <paramref name="type"/> to dependency injection.
-      /// </summary>
-      /// <param name="type">An implementation of <see cref="IRelationalTypeMappingSourcePlugin"/>.</param>
-      /// <exception cref="ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
-      public void AddRelationalTypeMappingSourcePlugin([NotNull] Type type)
-      {
-         if (type == null)
-            throw new ArgumentNullException(nameof(type));
-
-         if (!typeof(IRelationalTypeMappingSourcePlugin).IsAssignableFrom(type))
-            throw new ArgumentException($"The provided type '{type.DisplayName()}' must implement '{nameof(IRelationalTypeMappingSourcePlugin)}'.", nameof(type));
-
-         Add(ServiceDescriptor.Singleton(typeof(IRelationalTypeMappingSourcePlugin), type));
       }
 
       /// <summary>

@@ -112,37 +112,6 @@ namespace Thinktecture
       }
 
       /// <summary>
-      /// Add an <see cref="IRelationalTypeMappingSourcePlugin"/> to dependency injection.
-      /// </summary>
-      /// <param name="builder">Options builder.</param>
-      /// <typeparam name="TContext">Type of the context.</typeparam>
-      /// <typeparam name="TPlugin">Type of the plugin implementing <see cref="IRelationalTypeMappingSourcePlugin"/>.</typeparam>
-      /// <returns>Options builder for chaining.</returns>
-      [NotNull]
-      public static DbContextOptionsBuilder<TContext> AddRelationalTypeMappingSourcePlugin<TContext, TPlugin>([NotNull] this DbContextOptionsBuilder<TContext> builder)
-         where TContext : DbContext
-         where TPlugin : IRelationalTypeMappingSourcePlugin
-      {
-         // ReSharper disable once RedundantCast
-         ((DbContextOptionsBuilder)builder).AddRelationalTypeMappingSourcePlugin<TPlugin>();
-         return builder;
-      }
-
-      /// <summary>
-      /// Add an <see cref="IRelationalTypeMappingSourcePlugin"/> to dependency injection.
-      /// </summary>
-      /// <param name="builder">Options builder.</param>
-      /// <typeparam name="TPlugin">Type of the plugin implementing <see cref="IRelationalTypeMappingSourcePlugin"/>.</typeparam>
-      /// <returns>Options builder for chaining.</returns>
-      [NotNull]
-      public static DbContextOptionsBuilder AddRelationalTypeMappingSourcePlugin<TPlugin>([NotNull] this DbContextOptionsBuilder builder)
-         where TPlugin : IRelationalTypeMappingSourcePlugin
-      {
-         builder.AddOrUpdateExtension<RelationalDbContextOptionsExtension>(extension => extension.AddRelationalTypeMappingSourcePlugin(typeof(TPlugin)));
-         return builder;
-      }
-
-      /// <summary>
       /// Adds/replaces components that respect with database schema changes at runtime.
       /// </summary>
       /// <param name="builder">Options builder.</param>
