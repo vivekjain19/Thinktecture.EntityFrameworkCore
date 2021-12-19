@@ -33,20 +33,29 @@ public class ToScalarCollectionParameter : IntegrationTestsBase
 
    [Theory]
    [MemberData(nameof(_values))]
-   public void Should_work_with_default_data_types(object value)
+   public void Should_work_with_default_data_types_with_distinct(object value)
    {
-      _genericDataTypeTest.MakeGenericMethod(value.GetType()).Invoke(this, new[] { value });
+      _genericDataTypeTest.MakeGenericMethod(value.GetType()).Invoke(this, new[] { value, true });
    }
 
-   private void MakeGenericToCollectionParameterTest<T>(T value)
+   [Theory]
+   [MemberData(nameof(_values))]
+   public void Should_work_with_default_data_types_without_distinct(object value)
    {
-      ActDbContext.ToScalarCollectionParameter(new[] { value })
+      _genericDataTypeTest.MakeGenericMethod(value.GetType()).Invoke(this, new[] { value, false });
+   }
+
+   private void MakeGenericToCollectionParameterTest<T>(T value, bool applyDistinct)
+   {
+      ActDbContext.ToScalarCollectionParameter(new[] { value }, applyDistinct)
                   .ToList()
                   .Should().BeEquivalentTo(new[] { value });
    }
 
-   [Fact]
-   public async Task Should_work_with_contains()
+   [Theory]
+   [InlineData(true)]
+   [InlineData(false)]
+   public async Task Should_work_with_contains(bool applyDistinct)
    {
       var testEntity = new TestEntity
                        {
@@ -57,7 +66,7 @@ public class ToScalarCollectionParameter : IntegrationTestsBase
       await ArrangeDbContext.AddAsync(testEntity);
       await ArrangeDbContext.SaveChangesAsync();
 
-      var collectionParameter = ActDbContext.ToScalarCollectionParameter(new[] { testEntity.Id });
+      var collectionParameter = ActDbContext.ToScalarCollectionParameter(new[] { testEntity.Id }, applyDistinct);
       var loadedEntities = await ActDbContext.TestEntities
                                              .Where(e => collectionParameter.Contains(e.Id))
                                              .ToListAsync();

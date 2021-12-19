@@ -9,16 +9,20 @@ public class ToComplexCollectionParameter : IntegrationTestsBase
    {
    }
 
-   [Fact]
-   public void Should_do_roundtrip()
+   [Theory]
+   [InlineData(true)]
+   [InlineData(false)]
+   public void Should_do_roundtrip(bool applyDistinct)
    {
-      ActDbContext.ToComplexCollectionParameter(new[] { new MyParameter(new Guid("D3E99F44-40A1-4E4E-820F-9D7C7B02AFA5"), new ConvertibleClass(42)) })
+      ActDbContext.ToComplexCollectionParameter(new[] { new MyParameter(new Guid("D3E99F44-40A1-4E4E-820F-9D7C7B02AFA5"), new ConvertibleClass(42)) }, applyDistinct)
                   .ToList()
                   .Should().BeEquivalentTo(new[] { new MyParameter(new Guid("D3E99F44-40A1-4E4E-820F-9D7C7B02AFA5"), new ConvertibleClass(42)) });
    }
 
-   [Fact]
-   public async Task Should_work_with_joins()
+   [Theory]
+   [InlineData(true)]
+   [InlineData(false)]
+   public async Task Should_work_with_joins(bool applyDistinct)
    {
       var testEntity = new TestEntity
                        {
@@ -29,7 +33,7 @@ public class ToComplexCollectionParameter : IntegrationTestsBase
       await ArrangeDbContext.AddAsync(testEntity);
       await ArrangeDbContext.SaveChangesAsync();
 
-      var collectionParameter = ActDbContext.ToComplexCollectionParameter(new[] { new MyParameter(testEntity.Id, new ConvertibleClass(42)) });
+      var collectionParameter = ActDbContext.ToComplexCollectionParameter(new[] { new MyParameter(testEntity.Id, new ConvertibleClass(42)) }, applyDistinct);
       var loadedEntities = await ActDbContext.TestEntities
                                              .Join(collectionParameter, t => new { t.Id, ConvertibleClass = t.ConvertibleClass! }, p => new { Id = p.Column1, ConvertibleClass = p.Column2 }, (t, p) => t)
                                              .ToListAsync();

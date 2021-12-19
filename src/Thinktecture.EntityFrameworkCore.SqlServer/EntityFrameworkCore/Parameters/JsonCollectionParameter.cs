@@ -6,7 +6,7 @@ namespace Thinktecture.EntityFrameworkCore.Parameters;
 /// <summary>
 /// Represents a collection parameter.
 /// </summary>
-public class JsonCollectionParameter<T, TConverted> : JsonCollectionParameter
+internal class JsonCollectionParameter<T, TConverted> : JsonCollectionParameter
 {
    private readonly IEnumerable<T> _values;
    private readonly Func<object?, object?> _convertValue;
@@ -41,7 +41,7 @@ public class JsonCollectionParameter<T, TConverted> : JsonCollectionParameter
 /// <summary>
 /// Represents a collection parameter.
 /// </summary>
-public class JsonCollectionParameter<T> : JsonCollectionParameter
+internal class JsonCollectionParameter<T> : JsonCollectionParameter
 {
    private readonly IEnumerable<T> _values;
    private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -69,7 +69,7 @@ public class JsonCollectionParameter<T> : JsonCollectionParameter
 /// <summary>
 /// Represents a collection parameter.
 /// </summary>
-public abstract class JsonCollectionParameter : IConvertible
+internal abstract class JsonCollectionParameter : IConvertible
 {
    /// <inheritdoc />
    public abstract string ToString(IFormatProvider? provider);
